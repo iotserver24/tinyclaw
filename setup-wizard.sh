@@ -98,6 +98,41 @@ esac
 echo -e "${GREEN}✓ Model: $MODEL${NC}"
 echo ""
 
+# Claude API Configuration
+echo "Claude API Configuration"
+echo -e "${YELLOW}(Configure custom API endpoint and model)${NC}"
+echo ""
+
+# API Key
+read -rp "Anthropic API Key [leave empty to use Claude Code default]: " API_KEY
+if [ -n "$API_KEY" ]; then
+    echo -e "${GREEN}✓ Custom API key configured${NC}"
+else
+    echo -e "${YELLOW}Using Claude Code default credentials${NC}"
+fi
+echo ""
+
+# Base URL
+read -rp "API Base URL [default: https://api.anthropic.com]: " BASE_URL_INPUT
+BASE_URL=${BASE_URL_INPUT:-https://api.anthropic.com}
+echo -e "${GREEN}✓ Base URL: $BASE_URL${NC}"
+echo ""
+
+# Custom Model ID
+echo "Use custom model ID?"
+echo -e "${YELLOW}(Leave empty to use standard model selection)${NC}"
+echo ""
+read -rp "Custom Model ID [optional]: " CUSTOM_MODEL_ID
+
+if [ -n "$CUSTOM_MODEL_ID" ]; then
+    MODEL_ID="$CUSTOM_MODEL_ID"
+    echo -e "${GREEN}✓ Custom Model ID: $MODEL_ID${NC}"
+else
+    MODEL_ID=""
+    echo -e "${YELLOW}Using standard model: $MODEL${NC}"
+fi
+echo ""
+
 # Heartbeat interval
 echo "Heartbeat interval (seconds)?"
 echo -e "${YELLOW}(How often Claude checks in proactively)${NC}"
@@ -141,7 +176,10 @@ cat > "$SETTINGS_FILE" <<EOF
   },
   "models": {
     "anthropic": {
-      "model": "${MODEL}"
+      "model": "${MODEL}",
+      "api_key": "${API_KEY}",
+      "base_url": "${BASE_URL}",
+      "model_id": "${MODEL_ID}"
     }
   },
   "monitoring": {

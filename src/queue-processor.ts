@@ -32,6 +32,9 @@ interface Settings {
     models?: {
         anthropic?: {
             model?: string;
+            api_key?: string;
+            base_url?: string;
+            model_id?: string;
         };
     };
     monitoring?: {
@@ -43,6 +46,14 @@ function getModelFlag(): string {
     try {
         const settingsData = fs.readFileSync(SETTINGS_FILE, 'utf8');
         const settings: Settings = JSON.parse(settingsData);
+
+        // Check for custom model ID first
+        const customModelId = settings?.models?.anthropic?.model_id;
+        if (customModelId) {
+            return `--model ${customModelId} `;
+        }
+
+        // Fall back to standard model mapping
         const model = settings?.models?.anthropic?.model;
         if (model) {
             const modelId = MODEL_IDS[model];
@@ -52,6 +63,18 @@ function getModelFlag(): string {
         }
     } catch { }
     return '';
+}
+
+function getApiConfig(): { apiKey?: string; baseUrl?: string } {
+    try {
+        const settingsData = fs.readFileSync(SETTINGS_FILE, 'utf8');
+        const settings: Settings = JSON.parse(settingsData);
+        return {
+            apiKey: settings?.models?.anthropic?.api_key,
+            baseUrl: settings?.models?.anthropic?.base_url,
+        };
+    } catch { }
+    return {};
 }
 
 // Ensure directories exist
@@ -114,12 +137,27 @@ async function processMessage(messageFile: string): Promise<void> {
         let response: string;
         try {
             const modelFlag = getModelFlag();
+            const apiConfig = getApiConfig();
+
+            // Build environment variables for API configuration
+            const envVars: Record<string, string> = {};
+            if (apiConfig.apiKey) {
+                envVars.ANTHROPIC_API_KEY = apiConfig.apiKey;
+            }
+            if (apiConfig.baseUrl) {
+                envVars.ANTHROPIC_BASE_URL = apiConfig.baseUrl;
+            }
+
+            // Merge with existing environment
+            const execEnv = { ...process.env, ...envVars };
+
             response = execSync(
                 `cd "${SCRIPT_DIR}" && claude --dangerously-skip-permissions ${modelFlag}${continueFlag}-p "${message.replace(/"/g, '\\"')}"`,
                 {
                     encoding: "utf-8",
                     timeout: 0, // No timeout - wait for Claude to finish (agents can run long)
                     maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+                    env: execEnv,
                 },
             );
         } catch (error) {

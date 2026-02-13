@@ -534,6 +534,110 @@ tmux attach -t tinyclaw
 
 ## 🚀 Production Deployment
 
+### Using Docker Compose (Recommended for VPS/Coolify)
+
+Docker deployment is perfect for hosting on VPS platforms like Coolify, with support for custom API endpoints and environment-based configuration.
+
+#### Step 1: Configure Environment Variables
+
+Copy the example environment file and edit it:
+
+```bash
+cp .env.example .env
+nano .env  # or use your preferred editor
+```
+
+Set the following required variables in `.env`:
+
+```bash
+# Bot Tokens
+DISCORD_BOT_TOKEN=your_discord_bot_token_here
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
+
+# Claude API Configuration
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+ANTHROPIC_BASE_URL=https://api.anthropic.com  # Optional: custom endpoint
+ANTHROPIC_MODEL=claude-sonnet-4-5              # Optional: custom model ID
+
+# TinyClaw Configuration
+TINYCLAW_CHANNELS=telegram,discord  # Comma-separated list
+TINYCLAW_HEARTBEAT_INTERVAL=3600    # Seconds
+```
+
+#### Step 2: Deploy with Docker Compose
+
+```bash
+# Build and start the container
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop the container
+docker-compose down
+
+# Rebuild after changes
+docker-compose up -d --build
+```
+
+#### Step 3: WhatsApp QR Code (if enabled)
+
+To scan the WhatsApp QR code:
+
+```bash
+# View container logs to see the QR code
+docker-compose logs -f tinyclaw
+```
+
+Scan the QR code with your phone. The session will persist in the `whatsapp-session` volume.
+
+#### Deployment on Coolify
+
+1. Fork/clone this repository
+2. In Coolify, create a new resource → Docker Compose
+3. Point to your repository
+4. Set environment variables in Coolify's UI (same as above)
+5. Deploy!
+
+Coolify will automatically:
+- Build the Docker image
+- Set environment variables
+- Manage container lifecycle
+- Handle logs and monitoring
+
+#### Volume Persistence
+
+Docker Compose mounts these directories for persistence:
+- `whatsapp-session/`: WhatsApp session data (persisted in named volume)
+- `logs/`: Application logs
+- `queue/`: Message queue data
+- `settings.json`: Configuration file
+
+### Using Docker (Manual)
+
+```bash
+# Build the image
+docker build -t tinyclaw .
+
+# Run with environment variables
+docker run -d \
+  --name tinyclaw \
+  -e DISCORD_BOT_TOKEN="your_token" \
+  -e TELEGRAM_BOT_TOKEN="your_token" \
+  -e ANTHROPIC_API_KEY="your_api_key" \
+  -e ANTHROPIC_MODEL="claude-sonnet-4-5" \
+  -e TINYCLAW_CHANNELS="telegram,discord" \
+  -v tinyclaw-whatsapp:/app/.tinyclaw/whatsapp-session \
+  -v ./logs:/app/.tinyclaw/logs \
+  tinyclaw
+
+# View logs
+docker logs -f tinyclaw
+
+# Stop container
+docker stop tinyclaw
+```
+
 ### Using systemd
 
 ```bash
@@ -556,6 +660,21 @@ command=/path/to/tinyclaw/tinyclaw.sh start
 autostart=true
 autorestart=true
 ```
+
+### Custom API Configuration (Non-Docker)
+
+If running without Docker, you can configure custom API settings through the setup wizard:
+
+```bash
+./tinyclaw.sh setup
+```
+
+The wizard will prompt you for:
+- API Key (leave empty to use Claude Code default)
+- Base URL (default: https://api.anthropic.com)
+- Custom Model ID (optional, e.g., for fine-tuned models)
+
+These settings are saved in `.tinyclaw/settings.json` and used for all API calls.
 
 ## 🎯 Use Cases
 
