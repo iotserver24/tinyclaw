@@ -32,9 +32,6 @@ services:
       # Persist queue data (optional but recommended for reliability)
       - ./queue:/app/.tinyclaw/queue
 
-      # Persist settings
-      - ./settings.json:/app/.tinyclaw/settings.json
-
     # Health check (optional)
     healthcheck:
       test: ["CMD", "tmux", "has-session", "-t", "tinyclaw"]

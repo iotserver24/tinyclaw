@@ -611,7 +611,8 @@ Docker Compose mounts these directories for persistence:
 - `whatsapp-session/`: WhatsApp session data (persisted in named volume)
 - `logs/`: Application logs
 - `queue/`: Message queue data
-- `settings.json`: Configuration file
+
+**Note:** Configuration is managed through environment variables (not a mounted file). The `settings.json` file is automatically generated at container startup from the environment variables you set.
 
 ### Using Docker (Manual)
 
