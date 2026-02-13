@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+npm-debug.log
+
+# Build output
+dist/
+
+# Runtime files
+.tinyclaw/logs/
+.tinyclaw/channels/
+.tinyclaw/whatsapp-session/
+.tinyclaw/queue/
+.tinyclaw/reset_flag
+.wwebjs_cache/
+*.log
+
+# Git
+.git/
+.gitignore
+
+# Environment files
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation
+README.md
+
+# CI/CD
+.github/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore

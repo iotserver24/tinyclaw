@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  tinyclaw:
+    build: .
+    container_name: tinyclaw
+    restart: unless-stopped
+
+    # Environment variables for configuration
+    environment:
+      # Discord bot token
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+
+      # Telegram bot token
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+
+      # Claude API configuration
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-https://api.anthropic.com}
+      - ANTHROPIC_MODEL=${ANTHROPIC_MODEL:-claude-sonnet-4-5}
+
+      # TinyClaw configuration
+      - TINYCLAW_CHANNELS=${TINYCLAW_CHANNELS:-telegram,discord}
+      - TINYCLAW_HEARTBEAT_INTERVAL=${TINYCLAW_HEARTBEAT_INTERVAL:-3600}
+
+    # Mount volumes for persistence
+    volumes:
+      # Persist WhatsApp session data
+      - whatsapp-session:/app/.tinyclaw/whatsapp-session
+
+      # Persist logs (optional)
+      - ./logs:/app/.tinyclaw/logs
+
+      # Persist queue data (optional but recommended for reliability)
+      - ./queue:/app/.tinyclaw/queue
+
+      # Persist settings
+      - ./settings.json:/app/.tinyclaw/settings.json
+
+    # Health check (optional)
+    healthcheck:
+      test: ["CMD", "tmux", "has-session", "-t", "tinyclaw"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  whatsapp-session:
