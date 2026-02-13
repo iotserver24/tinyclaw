@@ -30,7 +30,7 @@ RUN npm run build
 RUN mkdir -p .tinyclaw/queue/incoming .tinyclaw/queue/outgoing .tinyclaw/queue/processing .tinyclaw/logs
 
 # Make scripts executable
-RUN chmod +x tinyclaw.sh setup-wizard.sh heartbeat-cron.sh
+RUN chmod +x tinyclaw.sh setup-wizard.sh heartbeat-cron.sh docker-init.sh
 
 # Set environment variable for Claude
 ENV PATH="/root/.local/bin:${PATH}"
@@ -38,5 +38,5 @@ ENV PATH="/root/.local/bin:${PATH}"
 # Expose any required ports (if needed in the future)
 # EXPOSE 3000
 
-# Default command - start TinyClaw
-CMD ["./tinyclaw.sh", "start"]
+# Default command - initialize from env vars and start TinyClaw
+CMD ["bash", "-c", "./docker-init.sh && ./tinyclaw.sh start"]
